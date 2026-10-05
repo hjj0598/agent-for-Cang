@@ -1,0 +1,20 @@
+# frontend
+frontend/node_modules/
+frontend/dist/
+
+# backend
+backend/target/
+
+# logs
+*.log
+
+# system
+.DS_Store
+Thumbs.db
+
+# idea / vscode
+.idea/
+.vscode/
+
+# env
+.env
