@@ -62,6 +62,15 @@ public class KnowledgeDocumentServiceImpl implements KnowledgeDocumentService {
     }
 
     @Override
+    public KnowledgeDocument getByFileHash(Long userId, String fileHash) {
+        if (fileHash == null || fileHash.trim().isEmpty()) {
+            return null;
+        }
+
+        return knowledgeDocumentMapper.findByUserIdAndFileHash(userId, fileHash);
+    }
+
+    @Override
     public List<KnowledgeChunk> listChunks(Long id, Long userId) {
         KnowledgeDocument document = knowledgeDocumentMapper.findByIdAndUserId(id, userId);
 

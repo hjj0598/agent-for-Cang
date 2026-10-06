@@ -16,6 +16,8 @@ public interface KnowledgeDocumentService {
 
     KnowledgeDocument getById(Long id, Long userId);
 
+    KnowledgeDocument getByFileHash(Long userId, String fileHash);
+
     List<KnowledgeChunk> listChunks(Long id, Long userId);
 
     void add(KnowledgeDocument document);

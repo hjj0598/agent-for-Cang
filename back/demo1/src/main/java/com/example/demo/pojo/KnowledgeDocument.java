@@ -11,6 +11,7 @@ public class KnowledgeDocument {
     private String title;
     private String content;
     private String source;
+    private String fileHash;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

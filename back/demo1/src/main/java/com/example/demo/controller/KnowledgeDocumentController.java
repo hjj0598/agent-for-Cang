@@ -29,6 +29,8 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.List;
 
 @RestController
@@ -128,6 +130,12 @@ public class KnowledgeDocumentController {
 
         String filename = validateFilename(file.getOriginalFilename());
         byte[] fileBytes = file.getBytes();
+        String fileHash = sha256(fileBytes);
+
+        KnowledgeDocument duplicatedDocument = knowledgeDocumentService.getByFileHash(userId, fileHash);
+        if (duplicatedDocument != null) {
+            throw new RuntimeException("该文件已上传，请勿重复上传：" + duplicatedDocument.getTitle());
+        }
 
         String lowerName = filename.toLowerCase();
         String content;
@@ -150,11 +158,21 @@ public class KnowledgeDocumentController {
         document.setTitle(filename);
         document.setContent(content);
         document.setSource(source);
+        document.setFileHash(fileHash);
 
         knowledgeDocumentService.add(document);
         operationLogService.record(userId, "上传知识库", "上传文件：" + filename);
 
         return Result.success();
+    }
+
+    private String sha256(byte[] fileBytes) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return HexFormat.of().formatHex(digest.digest(fileBytes));
+        } catch (Exception e) {
+            throw new RuntimeException("文件指纹计算失败，请重新上传");
+        }
     }
 
     private String validateFilename(String filename) {
