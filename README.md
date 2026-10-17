@@ -51,7 +51,7 @@ https://jj.warwolf.cc.cd/login
 
 ### 6. 图片分析
 
-系统支持上传图片进行 AI 分析，可用于聊天截图识别、图片内容理解、文字提取和关系信息提取。该功能体现了视觉模型与关系记忆智能体的结合。
+系统支持上传图片进行 AI 分析，可用于聊天截图识别、图片内容理解、文字提取和关系信息提取。当前图片分析使用 DashScope 视觉模型 `qwen3-vl-plus`，已完成旧视觉模型名称不可用导致的 `model_not_found` 问题修复。该功能体现了视觉模型与关系记忆智能体的结合。
 
 ### 7. 重要日期识别与关系维护建议
 
@@ -98,6 +98,7 @@ https://jj.warwolf.cc.cd/login
 
 - DashScope OpenAI-compatible Chat Model
 - DashScope Embedding Model
+- DashScope Vision Model：`qwen3-vl-plus`
 - 向量检索
 - RAG 知识库问答
 - 图片理解与信息提取
@@ -198,7 +199,11 @@ spring.data.redis.port=6379
 
 langchain4j.open-ai.chat-model.base-url=https://dashscope.aliyuncs.com/compatible-mode/v1
 langchain4j.open-ai.chat-model.api-key=你的API_KEY
-langchain4j.open-ai.chat-model.model-name=你的模型名称
+langchain4j.open-ai.chat-model.model-name=你的聊天模型名称
+
+app.vision.base-url=https://dashscope.aliyuncs.com/compatible-mode/v1
+app.vision.api-key=你的API_KEY
+app.vision.model-name=qwen3-vl-plus
 ```
 
 ### 3. 启动后端
