@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
-
+// 定义ai映射接口
 @RestController
 @RequestMapping("/ai")
 public class AiChatController {
