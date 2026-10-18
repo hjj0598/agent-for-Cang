@@ -6,7 +6,7 @@ export function login(data) {
     body: JSON.stringify(data)
   })
 }
-
+// 导出接口方便调用
 export function register(data) {
   return request('/api/auth/register', {
     method: 'POST',
