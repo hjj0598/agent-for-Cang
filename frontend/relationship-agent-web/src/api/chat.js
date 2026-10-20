@@ -1,6 +1,7 @@
 import { getToken } from '@/store/user'
 import { handleUnauthorized } from '@/utils/request'
 
+// 发起流式聊天请求，并通过 onChunk 逐段返回模型回复。
 export async function chatStream(memoryId, message, onChunk) {
   const params = new URLSearchParams({
     memoryId,
@@ -41,6 +42,7 @@ export async function chatStream(memoryId, message, onChunk) {
   }
 }
 
+// 清理服务端事件流标记，将有效文本整理后交给页面展示。
 function formatStreamChunk(chunk) {
   return chunk
     .split('\n')
