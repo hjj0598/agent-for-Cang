@@ -1,6 +1,7 @@
 package com.example.demo.mapper;
 
 import com.example.demo.dto.PersonMemoryWithPerson;
+import com.example.demo.dto.PersonMemoryEvidence;
 import com.example.demo.pojo.PersonMemory;
 import org.apache.ibatis.annotations.*;
 
@@ -14,10 +15,21 @@ public interface PersonMemoryMapper {
     List<PersonMemory> findByPersonId(Long userId, Long personId);
 
     @Insert("insert into person_memory(user_id, person_id, memory_type, content, source) values(#{userId}, #{personId}, #{memoryType}, #{content}, #{source})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(PersonMemory memory);
 
     @Delete("delete from person_memory where id = #{memoryId} and person_id = #{personId} and user_id = #{userId}")
     void deleteById(Long memoryId, Long personId, Long userId);
+
+    @Select("""
+        select id, user_id, person_id, memory_type, content, source, created_at, updated_at
+        from person_memory
+        where id = #{memoryId}
+          and user_id = #{userId}
+        limit 1
+        """)
+    PersonMemory findByIdAndUserId(@Param("memoryId") Long memoryId,
+                                   @Param("userId") Long userId);
 
     @Select("""
         select pm.id, pm.user_id, pm.person_id, pm.memory_type, pm.content, pm.source, pm.created_at, pm.updated_at
@@ -81,4 +93,25 @@ public interface PersonMemoryMapper {
         order by pm.updated_at desc, pm.id desc
         """)
     List<PersonMemoryWithPerson> findDateMemoriesByUserId(@Param("userId") Long userId);
+
+    @Select("""
+        select
+            pm.id as memoryId,
+            pm.person_id as personId,
+            p.name as personName,
+            p.relation,
+            pm.memory_type as memoryType,
+            pm.content,
+            pm.source,
+            pm.created_at as createdAt,
+            pm.updated_at as updatedAt
+        from person_memory pm
+        join person p on pm.person_id = p.id
+        where pm.user_id = #{userId}
+          and p.user_id = #{userId}
+        order by pm.updated_at desc, pm.id desc
+        limit #{limit}
+        """)
+    List<PersonMemoryEvidence> findEvidenceByUserId(@Param("userId") Long userId,
+                                                    @Param("limit") Integer limit);
 }

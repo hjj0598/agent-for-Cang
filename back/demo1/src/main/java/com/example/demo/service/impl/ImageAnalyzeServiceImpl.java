@@ -48,7 +48,7 @@ public class ImageAnalyzeServiceImpl implements ImageAnalyzeService {
     @Value("${app.vision.api-key:${DASHSCOPE_API_KEY:}}")
     private String apiKey;
 
-    @Value("${app.vision.model-name:qwen-vl-plus}")
+    @Value("${app.vision.model-name:qwen3-vl-plus}")
     private String modelName;
 
     @Value("${app.vision.timeout-seconds:90}")

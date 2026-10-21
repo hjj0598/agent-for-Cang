@@ -1,0 +1,20 @@
+[dependencies]
+
+[package]
+  cjc-version = "1.1.3"
+  compile-option = ""
+  description = "Cangjie memory candidate rule guard for the Java relationship-memory agent."
+  link-option = ""
+  name = "cangjie_memory_guard"
+  output-type = "executable"
+  src-dir = ""
+  target-dir = ""
+  version = "1.0.0"
+  package-configuration = {}
+
+# If stdx is not bundled with your Cangjie SDK, install cangjie_stdx and add
+# the real path below. You can get the target name with: cjc -v
+#
+# [target.x86_64-w64-mingw32]
+#   [target.x86_64-w64-mingw32.bin-dependencies]
+#     path-option = ["D:\\cangjie-stdx\\windows_x86_64_cjnative\\dynamic\\stdx"]

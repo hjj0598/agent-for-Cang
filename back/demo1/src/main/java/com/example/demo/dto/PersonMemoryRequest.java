@@ -16,4 +16,8 @@ public class PersonMemoryRequest {
 
     @Size(max = 100, message = "记忆来源不能超过100个字符")
     private String source;
+
+    private String conflictAction;
+
+    private Long conflictMemoryId;
 }

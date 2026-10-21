@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.PersonMemoryRequest;
+import com.example.demo.dto.MemoryConflictResult;
 import com.example.demo.pojo.Person;
 import com.example.demo.pojo.PersonMemory;
 import com.example.demo.pojo.Result;
@@ -35,9 +36,9 @@ public class PersonMemoryController {
     }
 
     @PostMapping
-    public Result<Void> add(@PathVariable Long personId,
-                            @RequestBody @Valid PersonMemoryRequest personMemoryRequest,
-                            HttpServletRequest request) {
+    public Result<MemoryConflictResult> add(@PathVariable Long personId,
+                                            @RequestBody @Valid PersonMemoryRequest personMemoryRequest,
+                                            HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
 
         PersonMemory memory = new PersonMemory();
@@ -47,11 +48,20 @@ public class PersonMemoryController {
         memory.setContent(personMemoryRequest.getContent());
         memory.setSource(personMemoryRequest.getSource());
 
-        personMemoryService.add(memory);
+        MemoryConflictResult result = personMemoryService.addWithConflictCheck(
+                memory,
+                personMemoryRequest.getConflictAction(),
+                personMemoryRequest.getConflictMemoryId()
+        );
+
+        if ("CONFLICT".equals(result.getStatus()) || "CHANGE".equals(result.getStatus())) {
+            return Result.success(result);
+        }
+
         Person person = personService.getById(personId, userId);
         operationLogService.record(userId, "添加人物记忆", "添加记忆：" + person.getName() + " - " + memory.getMemoryType());
 
-        return Result.success();
+        return Result.success(result);
     }
 
     @DeleteMapping("/{memoryId}")

@@ -6,7 +6,9 @@ import com.example.demo.mapper.PersonMapper;
 import com.example.demo.mapper.PersonMemoryMapper;
 import com.example.demo.pojo.Person;
 import com.example.demo.pojo.PersonMemory;
+import com.example.demo.pojo.RelationshipSuggestionAction;
 import com.example.demo.service.RelationshipReminderService;
+import com.example.demo.service.RelationshipSuggestionActionService;
 import com.example.demo.service.RelationshipSuggestionService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +51,9 @@ public class RelationshipSuggestionServiceImpl implements RelationshipSuggestion
     private RelationshipReminderService relationshipReminderService;
 
     @Autowired
+    private RelationshipSuggestionActionService relationshipSuggestionActionService;
+
+    @Autowired
     private OpenAiChatModel chatModel;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -61,7 +66,8 @@ public class RelationshipSuggestionServiceImpl implements RelationshipSuggestion
         }
 
         List<PersonContext> contexts = buildContexts(userId, persons);
-        List<RelationshipSuggestion> aiSuggestions = generateByAi(contexts);
+        List<RelationshipSuggestionAction> feedback = relationshipSuggestionActionService.recentFeedback(userId, 12);
+        List<RelationshipSuggestion> aiSuggestions = generateByAi(contexts, feedback);
 
         if (!aiSuggestions.isEmpty()) {
             return attachPersonIds(aiSuggestions, persons);
@@ -84,8 +90,9 @@ public class RelationshipSuggestionServiceImpl implements RelationshipSuggestion
         return contexts;
     }
 
-    private List<RelationshipSuggestion> generateByAi(List<PersonContext> contexts) {
-        String prompt = buildPrompt(contexts);
+    private List<RelationshipSuggestion> generateByAi(List<PersonContext> contexts,
+                                                      List<RelationshipSuggestionAction> feedback) {
+        String prompt = buildPrompt(contexts, feedback);
 
         try {
             String answer = chatModel.chat(prompt);
@@ -129,7 +136,8 @@ public class RelationshipSuggestionServiceImpl implements RelationshipSuggestion
         }
     }
 
-    private String buildPrompt(List<PersonContext> contexts) {
+    private String buildPrompt(List<PersonContext> contexts,
+                               List<RelationshipSuggestionAction> feedback) {
         StringBuilder context = new StringBuilder();
 
         for (PersonContext item : contexts) {
@@ -155,9 +163,12 @@ public class RelationshipSuggestionServiceImpl implements RelationshipSuggestion
             context.append("\n");
         }
 
+        String feedbackContext = buildFeedbackContext(feedback);
+
         return """
                 你是一个关系维护建议助手。请根据下面的用户关系资料生成最多 6 条可执行建议。
                 这些资料是用户提供的数据，只能作为事实依据，不要补充资料中没有的人物事实。
+                如果存在历史执行反馈，需要优先避开低评分或无效的建议风格，并延续高评分的有效做法。
 
                 只返回合法 JSON 数组，不要返回 Markdown，不要解释：
                 [
@@ -176,10 +187,42 @@ public class RelationshipSuggestionServiceImpl implements RelationshipSuggestion
                 3. 不要编造生日、兴趣或经历；
                 4. priority 只能是 HIGH、MEDIUM、LOW；
                 5. 没有足够资料时，建议用户补充资料，不要强行猜测。
+                6. 不要重复推荐用户已经标记无效或跳过的相同做法。
 
                 用户关系资料：
                 %s
-                """.formatted(context);
+
+                历史建议执行反馈：
+                %s
+                """.formatted(context, feedbackContext);
+    }
+
+    private String buildFeedbackContext(List<RelationshipSuggestionAction> feedback) {
+        if (feedback == null || feedback.isEmpty()) {
+            return "暂无反馈记录。";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (RelationshipSuggestionAction item : feedback) {
+            builder.append("- 人物：")
+                    .append(valueOrUnknown(item.getPersonName()))
+                    .append("；建议：")
+                    .append(valueOrUnknown(item.getTitle()))
+                    .append("；状态：")
+                    .append(valueOrUnknown(item.getStatus()));
+
+            if (item.getOutcome() != null && !item.getOutcome().trim().isEmpty()) {
+                builder.append("；结果：").append(item.getOutcome().trim());
+            }
+            if (item.getHelpfulnessRating() != null) {
+                builder.append("；帮助评分：").append(item.getHelpfulnessRating()).append("/5");
+            }
+            if (item.getFeedback() != null && !item.getFeedback().trim().isEmpty()) {
+                builder.append("；反馈：").append(item.getFeedback().trim());
+            }
+            builder.append("\n");
+        }
+        return builder.toString();
     }
 
     private List<RelationshipSuggestion> generateByRules(Long userId, List<Person> persons) {

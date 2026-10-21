@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.MemoryConflictResult;
 import com.example.demo.pojo.PersonMemory;
 
 import java.util.List;
@@ -10,6 +11,8 @@ public interface PersonMemoryService {
 
     void add(PersonMemory memory);
 
+    MemoryConflictResult addWithConflictCheck(PersonMemory memory, String conflictAction, Long conflictMemoryId);
+
     void delete(Long userId, Long personId, Long memoryId);
     List<PersonMemory> findByPersonName(String personName);
 
@@ -19,5 +22,5 @@ public interface PersonMemoryService {
 
     List<PersonMemory> searchByUserIdAndPersonName(Long userId, String personName);
 
-    void addByUserIdAndPersonName(Long userId, String personName, String memoryType, String content, String source);
+    MemoryConflictResult addByUserIdAndPersonName(Long userId, String personName, String memoryType, String content, String source);
 }
