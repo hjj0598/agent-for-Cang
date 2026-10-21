@@ -237,6 +237,7 @@ export default {
       await this.loadSessions(false)
     },
     async restoreLastSession() {
+      // 先加载首批会话，再按需翻页找回上次打开的会话。
       this.sessionPage = 1
       await this.loadSessions(false)
 
@@ -452,6 +453,7 @@ export default {
     },
     async send() {
       if (!this.message.trim()) return
+      // 先显示用户消息与空回复，再把流式片段追加到同一条回复中。
       const userText = this.message.trim()
       this.messages.push({
         id: Date.now(),
@@ -477,6 +479,7 @@ export default {
         if (!assistantMessage.content.trim()) {
           assistantMessage.content = '没有收到回复，请稍后再试。'
         }
+        // 服务端在首条消息时创建会话，回复完成后刷新列表以取得其 ID。
         await this.resetSessions()
         const currentSession = this.sessions.find(item => item.memoryId === this.memoryId)
         if (currentSession) {

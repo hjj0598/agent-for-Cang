@@ -82,6 +82,7 @@ const router = new VueRouter({
   routes
 })
 
+// 未登录时统一跳转登录页，登录页本身允许直接访问。
 router.beforeEach((to, from, next) => {
   if (to.path === '/login') {
     next()

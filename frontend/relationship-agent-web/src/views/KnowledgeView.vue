@@ -253,6 +253,7 @@ export default {
     async onFileSelected(file) {
       if (!file) return
 
+      // 上传前先检查格式和大小，避免发送明显无效的文件。
       const fileName = file.name || ''
       const lowerName = fileName.toLowerCase()
       if (!lowerName.endsWith('.txt') && !lowerName.endsWith('.pdf')) {
@@ -326,6 +327,7 @@ export default {
         }
 
         this.showMessage('知识已删除', 'success')
+        // 删除当前页最后一条后返回上一页，避免停留在空页。
         if (this.documents.length === 1 && this.page > 1) {
           this.page = this.page - 1
         }
@@ -421,6 +423,7 @@ export default {
       this.chunks = []
     },
     async submitEdit() {
+      // 修改原文后由后端重建对应的知识切片和向量。
       if (!this.editForm.title.trim()) {
         this.showMessage('请先填写标题')
         return

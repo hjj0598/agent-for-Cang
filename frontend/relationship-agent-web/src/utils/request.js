@@ -20,6 +20,7 @@ function isPublicAuthRequest(url) {
 }
 
 export function handleUnauthorized() {
+  // 多个请求同时返回 401 时只触发一次登录跳转。
   if (redirectingToLogin || window.location.pathname === '/login') {
     return
   }
@@ -48,6 +49,7 @@ export async function request(url, options = {}) {
     ...(options.headers || {})
   }
 
+  // 上传文件交给浏览器设置 multipart 边界，其余请求使用 JSON。
   if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json'
   }
@@ -71,6 +73,7 @@ export async function request(url, options = {}) {
     }
   }
 
+  // 公开认证接口的 401 属于表单错误，不代表当前会话过期。
   if (response.status === 401 && !isPublicAuthRequest(url)) {
     handleUnauthorized()
     return {
